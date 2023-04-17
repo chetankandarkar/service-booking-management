@@ -1,0 +1,26 @@
+version: 0.2
+
+phases: 
+  install:
+    runtime-versions:
+      docker: 18
+  pre_build:
+    commands:
+      - echo Logging into Amazon ECR
+      - $(aws ecr get-login-password --region $AWS_REGION)
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building java
+      - mvn compile
+      - mvn package
+      - echo Building the docker image...
+      - docker tag service/booksapp $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/sbm-server-z:sbm-server
+  post_build:
+    commands:
+      - echo Build completed on `data`
+      - echo Puching docker image....
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/sbm-server-registry:sbm-server
+
+artifacts:
+  files: taskdefinition.json
